@@ -30,7 +30,7 @@ import webbrowser
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 SYSTEM = platform.system()
 IS_WIN, IS_MAC, IS_LINUX = SYSTEM == "Windows", SYSTEM == "Darwin", SYSTEM == "Linux"
 
@@ -865,23 +865,83 @@ def collect_startup(args):
     return s
 
 
+# ------------------------------------------------------------------ APP INSTALLATE
+def collect_installed(args):
+    s = section("installate", "App installate", wide=True)
+    rows = []
+    if IS_WIN:
+        keys = ("'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',"
+                "'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',"
+                "'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*'")
+        data = ps_json(f"Get-ItemProperty {keys} -ErrorAction SilentlyContinue | "
+                       "Where-Object { $_.DisplayName -and -not $_.SystemComponent -and -not $_.ParentKeyName } | "
+                       "Select-Object DisplayName,DisplayVersion,Publisher,InstallDate,EstimatedSize")
+        seen = set()
+        for a in data:
+            name = (a.get("DisplayName") or "").strip()
+            if not name or name.lower() in seen:
+                continue
+            seen.add(name.lower())
+            d = str(a.get("InstallDate") or "")
+            date = f"{d[6:8]}/{d[4:6]}/{d[0:4]}" if re.fullmatch(r"\d{8}", d) else ""
+            size = a.get("EstimatedSize")
+            rows.append([name, str(a.get("DisplayVersion") or ""), str(a.get("Publisher") or "").strip(), date,
+                         hb(size * 1024) if isinstance(size, (int, float)) and size > 0 else ""])
+        headers = ["Nome", "Versione", "Produttore", "Installata il", "Dimensione"]
+        s["notes"].append("Elenco dei programmi desktop (come in Impostazioni > App > App installate). "
+                          "Le app del Microsoft Store di sistema non sono incluse.")
+    elif IS_MAC:
+        for folder in ("/Applications", os.path.expanduser("~/Applications")):
+            for app in sorted(glob.glob(os.path.join(folder, "*.app"))):
+                ver = run(["defaults", "read", os.path.join(app, "Contents", "Info"), "CFBundleShortVersionString"], 5)
+                rows.append([Path(app).stem, ver, folder])
+        headers = ["Nome", "Versione", "Cartella"]
+    else:
+        if shutil.which("dpkg-query"):
+            out = run(["apt-mark", "showmanual"])
+            rows = [[n, "", "installato manualmente (apt)"] for n in out.splitlines()]
+        if shutil.which("flatpak"):
+            for line in run(["flatpak", "list", "--app", "--columns=name,version"]).splitlines():
+                p2 = line.split("\t")
+                rows.append([p2[0], p2[1] if len(p2) > 1 else "", "flatpak"])
+        headers = ["Nome", "Versione", "Origine"]
+    rows.sort(key=lambda r: r[0].lower())
+    s["kv"].append(("Numero di app", str(len(rows))))
+    if rows:
+        s["tables"].append(("Elenco in ordine alfabetico", headers, rows))
+    return s
+
 # ------------------------------------------------------------------ SICUREZZA
 def collect_security(args):
     s = section("sicurezza", "Sicurezza e aggiornamenti")
     if IS_WIN:
+        avs = [a.get("displayName") for a in ps_json(
+            "Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct -ErrorAction SilentlyContinue"
+            " | Select-Object displayName") if a.get("displayName")]
+        others = [a for a in avs if "defender" not in a.lower()]
+        if avs:
+            s["kv"].append(("Antivirus installati", ", ".join(dict.fromkeys(avs))))
         mp = ps("$s=Get-MpComputerStatus -ErrorAction SilentlyContinue; "
                 "if($s){\"$($s.AntivirusEnabled)|$($s.RealTimeProtectionEnabled)|$($s.AntivirusSignatureAge)\"}")
-        if mp.count("|") == 2:
-            av, rt, age = mp.split("|")
-            s["kv"] += [("Microsoft Defender", "attivo" if av == "True" else "non attivo (forse c'è un altro antivirus)"),
-                        ("Protezione in tempo reale", "attiva" if rt == "True" else "DISATTIVATA"),
-                        ("Firme antivirus aggiornate", f"{age} giorni fa")]
-            if av == "True" and rt != "True":
+        parts = mp.split("|") if mp.count("|") == 2 else None
+        if parts and parts[0] == "True":
+            av, rt, age = parts
+            s["kv"] += [("Microsoft Defender", "attivo"),
+                        ("Protezione in tempo reale", "attiva" if rt == "True" else "DISATTIVATA")]
+            if age.isdigit() and int(age) < 10000:
+                s["kv"].append(("Firme antivirus aggiornate", f"{age} giorni fa"))
+                if int(age) > 7:
+                    issue("warn", "Sicurezza", f"Le firme antivirus non si aggiornano da {age} giorni.",
+                          "Avvia Windows Update e controlla la connessione.")
+            if rt != "True" and not others:
                 issue("crit", "Sicurezza", "La protezione in tempo reale di Defender è disattivata.",
                       "Riattivala da Sicurezza di Windows > Protezione da virus e minacce.")
-            if age.isdigit() and int(age) > 7:
-                issue("warn", "Sicurezza", f"Le firme antivirus non si aggiornano da {age} giorni.",
-                      "Avvia Windows Update e controlla la connessione.")
+        elif others:
+            s["kv"].append(("Microsoft Defender", f"spento (normale: la protezione è affidata a {others[0]})"))
+        elif parts or avs:
+            s["kv"].append(("Microsoft Defender", "non attivo"))
+            issue("crit", "Sicurezza", "Non risulta nessun antivirus attivo.",
+                  "Attiva Microsoft Defender da Sicurezza di Windows o installa l'antivirus aziendale.")
         last = ps("(Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 1).InstalledOn.ToString('yyyy-MM-dd')")
         if re.match(r"\d{4}-\d{2}-\d{2}", last):
             days = (dt.date.today() - dt.date.fromisoformat(last)).days
@@ -1071,7 +1131,8 @@ def main():
     steps = [("Sistema", collect_system), ("CPU", collect_cpu), ("RAM", collect_ram), ("Scheda grafica", collect_gpu),
              ("Dischi", collect_disks), ("Batteria", collect_battery), ("Temperature", collect_sensors),
              ("Rete", collect_network), ("Programmi in esecuzione", collect_processes),
-             ("Programmi all'avvio", collect_startup), ("Sicurezza", collect_security)]
+             ("Programmi all'avvio", collect_startup), ("App installate", collect_installed),
+             ("Sicurezza", collect_security)]
     if scan:
         steps.insert(5, ("Spazio occupato nelle cartelle", collect_space))
     sections = []
@@ -1109,8 +1170,11 @@ def main():
         Path(args.json).write_text(json.dumps({"meta": meta, "score": score, "issues": ISSUES, "sections": sections},
                                               ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Dati JSON salvati in: {args.json}")
-    if getattr(sys, "frozen", False):
-        input("\nPremi Invio per chiudere...")
+    if getattr(sys, "frozen", False) and sys.stdin and sys.stdin.isatty():
+        try:
+            input("\nPremi Invio per chiudere...")
+        except EOFError:
+            pass
 
 
 if __name__ == "__main__":
