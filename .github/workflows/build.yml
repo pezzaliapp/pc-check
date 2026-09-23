@@ -1,0 +1,61 @@
+# Crea gratuitamente gli eseguibili (senza bisogno di Python) per Windows, macOS e Linux.
+# Si avvia quando pubblichi una Release con tag che inizia con "v" (es. v1.0.0) oppure a mano da Actions.
+name: Build eseguibili
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            name: pc-check-windows
+          - os: macos-latest
+            name: pc-check-macos
+          - os: ubuntu-22.04
+            name: pc-check-linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install psutil pyinstaller
+      - run: pyinstaller --onefile --console --name pc-check pc_check.py
+      - name: Prepara il file da pubblicare
+        shell: bash
+        run: |
+          cd dist
+          if [ -f pc-check.exe ]; then
+            mv pc-check.exe "${{ matrix.name }}.exe"
+          else
+            chmod +x pc-check
+            mv pc-check "${{ matrix.name }}"
+            zip "${{ matrix.name }}.zip" "${{ matrix.name }}"
+            rm "${{ matrix.name }}"
+          fi
+          ls -la
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: dist/*
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
