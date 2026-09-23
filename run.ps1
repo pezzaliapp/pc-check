@@ -1,9 +1,9 @@
 # PC Check - avvio con un comando su Windows (PowerShell):
-#   irm https://raw.githubusercontent.com/TUO-UTENTE/pc-check/main/run.ps1 | iex
+#   irm https://raw.githubusercontent.com/pezzaliapp/pc-check/main/run.ps1 | iex
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$Raw = if ($env:PC_CHECK_RAW) { $env:PC_CHECK_RAW } else { "https://raw.githubusercontent.com/TUO-UTENTE/pc-check/main" }
+$Raw = if ($env:PC_CHECK_RAW) { $env:PC_CHECK_RAW } else { "https://raw.githubusercontent.com/pezzaliapp/pc-check/main" }
 $Dir = Join-Path $env:USERPROFILE ".pc-check"
 New-Item -ItemType Directory -Force -Path $Dir | Out-Null
 

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PC Check - controlla lo stato del tuo computer</title>
+<meta name="description" content="Controllo gratuito di CPU, RAM, scheda grafica, dischi, batteria e programmi per Windows, Mac e Linux.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>">
+<style>
+:root{--paper:#e9edf1;--sheet:#fbfcfd;--ink:#18222d;--steel:#5a6878;--rule:#cfd6de;--signal:#f2b705;--signal-ink:#1b1400;--ok:#2c7a4b;--code:#eef1f4;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--paper:#11161c;--sheet:#1a2129;--ink:#e6ebf0;--steel:#9aa8b6;--rule:#2c3640;--ok:#4cb87a;--code:#232c36;color-scheme:dark}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.h{font-family:Bahnschrift,"DIN Alternate","DIN Condensed","Roboto Condensed","Arial Narrow",system-ui,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:40px 20px 60px}
+header{border-left:10px solid var(--signal);padding:4px 0 4px 24px;margin-bottom:32px}
+h1{font-size:clamp(34px,6vw,54px);line-height:1.05;margin:0 0 12px;font-weight:700}
+.lead{font-size:19px;color:var(--steel);margin:0;max-width:60ch}
+.panel{background:var(--sheet);border-radius:4px;padding:26px 28px}
+.tabs{display:flex;gap:6px;margin:0 0 22px;flex-wrap:wrap}
+.tab{font:inherit;font-size:15px;padding:7px 16px;border:1px solid var(--rule);background:transparent;color:var(--ink);border-radius:3px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.tab:focus-visible,.btn:focus-visible,.copy:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+.btn{display:inline-block;background:var(--signal);color:var(--signal-ink);font-weight:700;font-size:19px;text-decoration:none;padding:15px 26px;border-radius:4px}
+.btn:hover{filter:brightness(1.05)}
+ol.steps{margin:22px 0 0;padding-left:22px}ol.steps li{margin:0 0 10px;padding-left:4px}
+kbd{font:inherit;font-size:14px;border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:0 6px;background:var(--code)}
+.cmd{display:flex;gap:0;margin:8px 0 4px;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.cmd code{flex:1;min-width:0;padding:12px 14px;background:var(--code);font:14px/1.5 ui-monospace,Consolas,Menlo,monospace;overflow-x:auto;white-space:nowrap}
+.copy{font:inherit;font-size:14px;font-weight:600;border:0;border-left:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:0 16px;cursor:pointer}
+.alt{margin-top:22px;border-top:1px solid var(--rule);padding-top:14px;color:var(--steel);font-size:15px}
+.alt summary{cursor:pointer;color:var(--ink)}
+.small{font-size:14px;color:var(--steel)}
+h2{font-size:26px;margin:40px 0 14px}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:2px 28px;padding:0;margin:0;list-style:none}
+.checks li{padding:9px 0;border-top:1px solid var(--rule)}.checks b{display:block}
+.checks span{color:var(--steel);font-size:14.5px}
+.privacy{margin-top:34px;padding:18px 22px;background:var(--sheet);border-radius:4px;border-left:4px solid var(--ok)}
+footer{margin-top:34px;color:var(--steel);font-size:14px}footer a{color:inherit}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1 class="h">Com'è messo il tuo computer?</h1>
+  <p class="lead">PC Check controlla processore, RAM, scheda grafica, dischi, batteria e programmi, poi ti mostra un punteggio e cosa sistemare. Gratis, in circa un minuto.</p>
+</header>
+
+<main class="panel">
+  <div class="tabs" role="tablist" aria-label="Sistema operativo">
+    <button class="tab" role="tab" data-os="win" aria-selected="false">Windows</button>
+    <button class="tab" role="tab" data-os="mac" aria-selected="false">Mac</button>
+    <button class="tab" role="tab" data-os="linux" aria-selected="false">Linux</button>
+  </div>
+
+  <!-- WINDOWS -->
+  <section data-panel="win" hidden>
+    <a class="btn h" href="https://github.com/pezzaliapp/pc-check/releases/latest/download/pc-check-windows.exe">Scarica PC Check per Windows</a>
+    <ol class="steps">
+      <li>Apri il file scaricato <b>pc-check-windows.exe</b>.</li>
+      <li>Se compare la finestra blu "Windows ha protetto il PC", clicca <b>Ulteriori informazioni</b> e poi <b>Esegui comunque</b>. Succede perché il programma è gratuito e non ha una firma a pagamento.</li>
+      <li>Aspetta circa un minuto: il report si apre da solo nel browser.</li>
+    </ol>
+    <details class="alt"><summary>In alternativa, avvialo da PowerShell (sempre l'ultima versione)</summary>
+      <p>Premi <kbd>Win</kbd>, scrivi <b>PowerShell</b>, premi <kbd>Invio</kbd>, incolla questo comando e premi <kbd>Invio</kbd>:</p>
+      <div class="cmd"><code>irm https://raw.githubusercontent.com/pezzaliapp/pc-check/main/run.ps1 | iex</code><button class="copy">Copia</button></div>
+    </details>
+  </section>
+
+  <!-- MAC -->
+  <section data-panel="mac" hidden>
+    <p style="margin-top:0">Sul Mac il modo più semplice è incollare un comando nel Terminale: funziona su tutti i Mac, Intel e Apple Silicon.</p>
+    <ol class="steps">
+      <li>Copia il comando:
+        <div class="cmd"><code>curl -fsSL https://raw.githubusercontent.com/pezzaliapp/pc-check/main/run.sh | bash</code><button class="copy">Copia</button></div>
+      </li>
+      <li>Premi <kbd>⌘ Cmd</kbd> + <kbd>Spazio</kbd>, scrivi <b>Terminale</b> e premi <kbd>Invio</kbd>.</li>
+      <li>Incolla con <kbd>⌘ Cmd</kbd> + <kbd>V</kbd> e premi <kbd>Invio</kbd>. Se il Mac chiede di installare gli "strumenti per sviluppatori", accetta e poi ripeti questo passo.</li>
+      <li>Aspetta circa un minuto: il report si apre da solo nel browser. Se macOS chiede il permesso per Documenti o Scrivania, puoi rifiutare.</li>
+    </ol>
+    <details class="alt"><summary>In alternativa, scarica il programma (solo Mac con chip Apple M1, M2, M3, M4…)</summary>
+      <p><a href="https://github.com/pezzaliapp/pc-check/releases/latest/download/pc-check-macos.zip">Scarica pc-check-macos.zip</a>, aprilo e fai clic destro sul file <b>pc-check-macos</b> &gt; <b>Apri</b>. Se il Mac lo blocca, vai in Impostazioni di Sistema &gt; Privacy e sicurezza e clicca <b>Apri comunque</b>.</p>
+    </details>
+  </section>
+
+  <!-- LINUX -->
+  <section data-panel="linux" hidden>
+    <ol class="steps" style="margin-top:0">
+      <li>Apri il Terminale (<kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd> su molte distribuzioni).</li>
+      <li>Incolla questo comando e premi <kbd>Invio</kbd>:
+        <div class="cmd"><code>curl -fsSL https://raw.githubusercontent.com/pezzaliapp/pc-check/main/run.sh | bash</code><button class="copy">Copia</button></div>
+      </li>
+      <li>Il report si apre nel browser. Per vedere anche moduli RAM e salute dei dischi aggiungi <code>sudo</code>: <code>… | sudo bash</code></li>
+    </ol>
+    <details class="alt"><summary>In alternativa, scarica il programma</summary>
+      <p><a href="https://github.com/pezzaliapp/pc-check/releases/latest/download/pc-check-linux.zip">Scarica pc-check-linux.zip</a>, estrailo ed esegui <code>./pc-check-linux</code>.</p>
+    </details>
+  </section>
+</main>
+
+<h2 class="h">Cosa controlla</h2>
+<ul class="checks">
+  <li><b>Processore</b><span>modello, core, utilizzo, test di velocità</span></li>
+  <li><b>Memoria RAM</b><span>quanta ne usi, moduli installati, velocità</span></li>
+  <li><b>Scheda grafica</b><span>modello, memoria video, driver</span></li>
+  <li><b>Dischi e spazio</b><span>spazio libero, SSD o HDD, salute, velocità, cartelle più pesanti</span></li>
+  <li><b>Batteria</b><span>carica, usura, cicli di ricarica</span></li>
+  <li><b>Programmi</b><span>quelli che rallentano e quelli che partono all'accensione</span></li>
+  <li><b>Rete</b><span>connessione Internet e DNS</span></li>
+  <li><b>Sicurezza</b><span>antivirus, firewall, aggiornamenti</span></li>
+</ul>
+
+<div class="privacy">I dati restano sul tuo computer: PC Check non invia niente a nessuno. Il codice è pubblico e verificabile su GitHub.</div>
+
+<footer>PC Check è open source (licenza MIT) · <a href="https://github.com/pezzaliapp/pc-check">codice su GitHub</a></footer>
+</div>
+
+<script>
+(function () {
+  var ua = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || "";
+  var s = ua.toLowerCase();
+  var os = s.indexOf("win") > -1 ? "win" : (s.indexOf("mac") > -1 || /iphone|ipad/.test(s)) ? "mac" : s.indexOf("linux") > -1 ? "linux" : "win";
+  var tabs = document.querySelectorAll(".tab"), panels = document.querySelectorAll("[data-panel]");
+  function show(id) {
+    tabs.forEach(function (t) { t.setAttribute("aria-selected", t.dataset.os === id ? "true" : "false"); });
+    panels.forEach(function (p) { p.hidden = p.dataset.panel !== id; });
+  }
+  tabs.forEach(function (t) { t.addEventListener("click", function () { show(t.dataset.os); }); });
+  show(os);
+
+  document.querySelectorAll(".copy").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var text = b.previousElementSibling.textContent;
+      var done = function () { b.textContent = "Copiato"; setTimeout(function () { b.textContent = "Copia"; }, 2000); };
+      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, fallback); } else { fallback(); }
+      function fallback() {
+        var r = document.createRange(); r.selectNodeContents(b.previousElementSibling);
+        var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        try { document.execCommand("copy"); done(); } catch (e) {}
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

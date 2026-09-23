@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # PC Check - avvio con un comando su macOS e Linux:
-#   curl -fsSL https://raw.githubusercontent.com/TUO-UTENTE/pc-check/main/run.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/pezzaliapp/pc-check/main/run.sh | bash
 # Con opzioni:  ... | bash -s -- --fast
 set -e
 
 main() {
-  RAW="${PC_CHECK_RAW:-https://raw.githubusercontent.com/TUO-UTENTE/pc-check/main}"
+  RAW="${PC_CHECK_RAW:-https://raw.githubusercontent.com/pezzaliapp/pc-check/main}"
   DIR="$HOME/.pc-check"
   mkdir -p "$DIR"
 

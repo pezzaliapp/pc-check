@@ -18,6 +18,9 @@ Un comando, circa un minuto, e ottieni un report con punteggio da 0 a 100 e l'el
 - **Programmi all'avvio**
 - **Sicurezza**: antivirus, firewall, aggiornamenti, cifratura disco (dove disponibile)
 
+👉 **Pagina per iniziare: https://pezzaliapp.github.io/pc-check/**
+(riconosce il tuo sistema e ti mostra cosa fare)
+
 Alla fine si apre nel browser un report HTML salvato nella tua cartella utente (`pc-check-report-DATA.html`).
 
 ## Avvio con un solo comando
@@ -25,13 +28,13 @@ Alla fine si apre nel browser un report HTML salvato nella tua cartella utente (
 **Windows** — apri *PowerShell* (tasto Start, scrivi "PowerShell") e incolla:
 
 ```powershell
-irm https://raw.githubusercontent.com/TUO-UTENTE/pc-check/main/run.ps1 | iex
+irm https://raw.githubusercontent.com/pezzaliapp/pc-check/main/run.ps1 | iex
 ```
 
 **macOS / Linux** — apri il *Terminale* e incolla:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/TUO-UTENTE/pc-check/main/run.sh | bash
+curl -fsSL https://raw.githubusercontent.com/pezzaliapp/pc-check/main/run.sh | bash
 ```
 
 Il comando scarica l'ultima versione, prepara un ambiente Python separato in `~/.pc-check` (non tocca il resto del sistema) e avvia il controllo.
@@ -39,13 +42,12 @@ Se Python manca, su Windows ti propone di installarlo gratis con winget; su Mac 
 
 ### Senza Python: eseguibili pronti
 
-Nella pagina **Releases** del repository trovi i file pronti da scaricare e aprire con doppio clic:
-`pc-check-windows.exe`, `pc-check-macos-apple-silicon`, `pc-check-macos-intel`, `pc-check-linux`.
+Nella pagina **Releases** trovi i file pronti:
+- **Windows**: [pc-check-windows.exe](https://github.com/pezzaliapp/pc-check/releases/latest/download/pc-check-windows.exe) — se compare "Windows ha protetto il PC", clicca *Ulteriori informazioni* > *Esegui comunque*.
+- **Mac Apple Silicon**: [pc-check-macos.zip](https://github.com/pezzaliapp/pc-check/releases/latest/download/pc-check-macos.zip) — apri lo zip, clic destro sul file > *Apri*; se viene bloccato: Impostazioni di Sistema > Privacy e sicurezza > *Apri comunque*. Sui Mac Intel usa il comando del Terminale.
+- **Linux**: [pc-check-linux.zip](https://github.com/pezzaliapp/pc-check/releases/latest/download/pc-check-linux.zip) — estrai ed esegui `./pc-check-linux`.
 
-Non essendo firmati (la firma costa), al primo avvio:
-- **Windows**: se compare "Windows ha protetto il PC", clicca *Ulteriori informazioni* > *Esegui comunque*.
-- **macOS**: nel Terminale `chmod +x pc-check-macos-*` poi clic destro sul file > *Apri*.
-- **Linux**: `chmod +x pc-check-linux && ./pc-check-linux`
+I file non sono firmati (la firma digitale è a pagamento), per questo il sistema chiede conferma al primo avvio.
 
 ## Opzioni
 
@@ -60,7 +62,7 @@ Non essendo firmati (la firma costa), al primo avvio:
 | `--json dati.json` | salva anche i dati grezzi |
 
 Esempi: `curl -fsSL .../run.sh | bash -s -- --fast` oppure, su Windows,
-`& ([scriptblock]::Create((irm https://raw.githubusercontent.com/TUO-UTENTE/pc-check/main/run.ps1))) --fast`
+`& ([scriptblock]::Create((irm https://raw.githubusercontent.com/pezzaliapp/pc-check/main/run.ps1))) --fast`
 
 Per dati più completi (moduli RAM e salute SMART su Linux, dettagli dischi su Windows) esegui come amministratore / con `sudo`.
 
@@ -77,11 +79,9 @@ Per dati più completi (moduli RAM e salute SMART su Linux, dettagli dischi su W
 - I test di velocità sono indicativi: utili per confrontare lo stesso computer nel tempo. Su Windows la lettura disco può risultare gonfiata dalla cache.
 - Su macOS la scansione delle cartelle può far comparire richieste di permesso per Documenti, Scrivania, Foto: puoi rifiutare, i valori saranno solo parziali.
 
-## Pubblicarlo sul tuo GitHub
+## Aggiornare il programma
 
-1. Crea un repository **pubblico** chiamato `pc-check`.
-2. Carica tutti i file di questa cartella (inclusa `.github/workflows/build.yml`).
-3. In `run.sh`, `run.ps1` e in questo README sostituisci `TUO-UTENTE` con il tuo nome utente GitHub.
-4. Per creare gli eseguibili: scheda **Releases** > *Draft a new release* > tag `v1.0.0` > *Publish*. Dopo qualche minuto gli eseguibili compaiono nella release.
+Modifica `pc_check.py` su GitHub: chi usa il comando del Terminale / PowerShell riceve subito la nuova versione.
+Per aggiornare anche gli eseguibili crea una nuova Release con un tag più alto (es. `v1.0.1`).
 
 Licenza: MIT.
